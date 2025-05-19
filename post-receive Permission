@@ -1,0 +1,3 @@
+Permission for the post-receive file
+
+chmod +x post-receive
