@@ -1,0 +1,48 @@
+
+pipeline {
+	agent any
+
+	stages {
+    	stage('Prepare Codebase') {
+        	steps {
+            	script {
+                	// Step 1: Check if /var/www/collabmaster exists, else clone
+                	if (!fileExists('/var/www/collabmaster-backend')) {
+                    	sh 'cd /var/www && git clone git@localhost:/home/git/git/collabmaster-backend.git'
+                	}
+
+                	// Step 2: Go inside /var/www/collabmaster
+                	dir('/var/www/collabmaster-backend') {
+                    	// Step 3: Switch to prod branch
+                    	sh 'git checkout prod || git checkout -b prod'
+
+                    	// Step 4: Pull from master
+                    	sh 'git pull origin master'
+
+                    	// Step 5: npm install
+                    	sh 'npm install'
+                	}
+            	}
+        	}
+    	}
+    	stage('Deploy') {
+            steps {
+                dir('/var/www/collabmaster-backend') {
+                script {
+                    sh './backend-script.sh'
+                }
+            }
+        }
+}
+
+	}
+
+	post {
+    	success {
+        	echo '✅ Build and deployment finished successfully.'
+    	}
+    	failure {
+        	echo '❌ Deployment failed! Check the logs above.'
+    	}
+	}
+}
