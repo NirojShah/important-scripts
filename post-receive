@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Jenkins Webhook URL with token
+JENKINS_URL="http://localhost:8080/generic-webhook-trigger/invoke?token=jenkins"
+
+# Read refs from stdin (post-receive gets them on each push)
+while read oldrev newrev refname; do
+    branch=$(echo $refname | sed 's|refs/heads/||')
+
+    # Check if pushed branch is master
+    if [ "$branch" = "master" ]; then
+        echo "Push to master detected. Triggering Jenkins..."
+        curl -X POST "$JENKINS_URL"
+    else
+        echo "Push to '$branch' — not triggering Jenkins."
+    fi
+done
